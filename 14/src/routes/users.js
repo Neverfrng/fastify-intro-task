@@ -8,6 +8,26 @@ export default (app) => {
   app.get("/users/new", (req, res) => res.view("src/views/users/new"));
 
   // BEGIN (write your solution here)
+  app.post("/users", (req, res) => {
+    const { firstName, lastName, email } = req.body;
+    const id = generateId();
+    const token = generateToken();
+    const user = { id, firstName, lastName, email, token };
+    users.push(user);
+    res.setCookie("token", token, { path: "/" });
+    res.redirect(`/users/${id}`);
+  });
 
+  app.get("/users/:id", (req, res) => {
+    const { id } = req.params;
+    const { token } = req.cookies;
+    const user = users.find((user) => user.id === id);
+
+    if (!user || user.token !== token) {
+      return res.code(404).send("User not found");
+    }
+
+    return res.view("src/views/users/show", { user });
+  });
   // END
 };
